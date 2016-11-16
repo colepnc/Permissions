@@ -2,6 +2,7 @@
 # but grant them near full control (no permissions/ownership changes of course) on subdirectories.
 
 # $Folders is the root of the mapped drive share, $Subfolders will recurse all files/folders below it
+
 # ICACLS to GUI names translation encased below, in canse you need to modify this script for different permissions
 <#
 Full Control (F)
@@ -20,20 +21,36 @@ Change permissions (WDAC)
 Take ownership (WO)
 #>
 
-$Folder = "\\server\rootsharefolder\"
-$Subfolders = Get-ChildItem $Folder -Recurse
-$UserGroup = "PNC-Permissionstest"
-$SUGroup = "SUGroup"
+# Begin log file, this will be placed on the client the script is being run from, do not modify unless you want to disable logging
+$ErrorActionPreference = "SilentlyContinue"
+Stop-Transcript | out-null
+$ErrorActionPreference = "Continue"
+Start-Transcript -path C:\Users\user\MappedDriveCleanup.txt -append
 
-# Sets the owner to the superuser group you intend to use to manage the drive
+$Folder = "\\server\shareroot\"
+$Subfolders = Get-ChildItem $Folder -Recurse
+$UserGroup = "Users"
+$SUGroup = "SuperUsers"
+
+# Phase 1 Sets the owner to the superuser group you intend to use to manage the drive
+Write-Host "Phase 1: Giving ownership to $SUGroup"
 icacls "$Folder" /setowner $SUGroup /T /C 
-# Reset permissions on all files
+
+# Phase 2 Reset permissions on all files
+Write-Host "Phase 2: Resetting possibly messy permissions, disabling inheritance on $Folder, and removing defualt usergroup"
 icacls "$Folder" /reset /T /C 
 # Disable inheritance on the root of the mapped drive
 icacls "$Folder" /inheritance:d /C 
 # Remove "Users" from the defualt permissions
 icacls "$Folder" /remove "Authenticated Users" /T /C 
-# grant $UserGroup the appropriate permissions (deny modify) to the root of the mapped drive
+
+# Phase 3 grant $UserGroup the appropriate permissions (deny modify) to the root of the mapped drive
+Write-Host "Phase 3: Granting permissions to $UserGroup and $SUGroup"
 icacls "$Folder" /grant ("$UserGroup" + ':(X,RD,RA,REA,RC)') /T /C 
 # grant $UserGroup the appropriate permissions to the subdirectories (everything but changing permissions/ownership)
 icacls "$Subfolders" /grant ("$UserGroup" + ':(WD,AD,WA,WEA,DC,D)') /T /C
+# grant $SUGroup full control
+icacls "$Folder" /grant ("$SUGroup" + ':(F)')
+
+# End log file
+Stop-Transcript
