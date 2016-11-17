@@ -51,6 +51,8 @@ Write-Host "Phase 2: Resetting possibly messy permissions, disabling inheritance
 icacls "$Folder" /reset /T /C 
 # Disable inheritance on the root of the mapped drive
 icacls "$Folder" /inheritance:d /C 
+# Disable inheritance on all subfolders of root folder (prevents duplicate acl entries)
+foreach ($Subfolder in $Subfolders) {icacls "$Subfolder" /inheritance:d /C}
 # Remove "Users" from the defualt permissions
 icacls "$Folder" /remove "Authenticated Users" /T /C 
 
