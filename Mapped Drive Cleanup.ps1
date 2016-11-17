@@ -1,10 +1,18 @@
 ﻿# The purpose of this script is to clean up silly permissions on a mapped drive, deny most users the ablity to modify the root folder of the drive,
-# but grant them near full control (no permissions/ownership changes of course) on subdirectories.
+# but grant them near full control (no permissions/ownership changes of course) within subdirectories.
 
 # $Folders is the root of the mapped drive share, $Subfolders will recurse all files/folders below it
 
 # ICACLS to GUI names translation encased below, in canse you need to modify this script for different permissions
 <#
+This folder only
+This folder, subfolders and files (OI)(CI)
+This folder and subfolders (CI)
+This folder and files (OI)
+Subfolders and files only (OI)(CI)(NP)(IO)
+Subfolders only (CI)(IO)
+Files only (OI)(IO)
+
 Full Control (F)
 Traverse folder / execute file (X)
 List folder / read data (RD)
@@ -27,8 +35,10 @@ Stop-Transcript | out-null
 $ErrorActionPreference = "Continue"
 Start-Transcript -path C:\Users\user\MappedDriveCleanup.txt -append
 
-$Folder = "\\server\shareroot\"
-$Subfolders = Get-ChildItem $Folder -Recurse
+$Folder = "\\server\shareroot"
+$Subfolders = Get-ChildItem $Folder -Directory | 
+              Where-Object {$_.PSIsContainer} | 
+              Select-Object -ExpandProperty FullName
 $UserGroup = "Users"
 $SUGroup = "SuperUsers"
 
@@ -46,9 +56,9 @@ icacls "$Folder" /remove "Authenticated Users" /T /C
 
 # Phase 3 grant $UserGroup the appropriate permissions (deny modify) to the root of the mapped drive
 Write-Host "Phase 3: Granting permissions to $UserGroup and $SUGroup"
-icacls "$Folder" /grant ("$UserGroup" + ':(X,RD,RA,REA,RC)') /T /C 
+icacls "$Folder" /grant ("$UserGroup" + ':(OI)(CI)(X,RD,RA,REA,RC)') /T /C 
 # grant $UserGroup the appropriate permissions to the subdirectories (everything but changing permissions/ownership)
-icacls "$Subfolders" /grant ("$UserGroup" + ':(WD,AD,WA,WEA,DC,D)') /T /C
+foreach ($Subfolder in $Subfolders) {icacls "$Subfolder" /grant ("$UserGroup" + ':(OI)(CI)(NP)(IO)(WD,AD,WA,WEA,DC,D)') /T /C}
 # grant $SUGroup full control
 icacls "$Folder" /grant ("$SUGroup" + ':(F)')
 
