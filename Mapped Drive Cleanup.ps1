@@ -36,7 +36,7 @@ $ErrorActionPreference = "Continue"
 Start-Transcript -path C:\Users\user\MappedDriveCleanup.txt -append
 
 $Folder = "\\server\shareroot"
-$Subfolders = Get-ChildItem $Folder -Directory | 
+$Subfolders = Get-ChildItem $Folder | 
               Where-Object {$_.PSIsContainer} | 
               Select-Object -ExpandProperty FullName
 $UserGroup = "Users"
