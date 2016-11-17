@@ -3,7 +3,7 @@
 
 # $Folders is the root of the mapped drive share, $Subfolders will recurse all files/folders below it
 
-# ICACLS to GUI names translation encased below, in canse you need to modify this script for different permissions
+# ICACLS to GUI names translation encased below, in case you need to modify this script for different permissions
 <#
 This folder only
 This folder, subfolders and files (OI)(CI)
