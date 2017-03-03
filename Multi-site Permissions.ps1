@@ -47,17 +47,17 @@ $SUGroup = "local" # Site-local group
 Write-Host "Phase 1: Giving ownership to $SUGroup"
 icacls "$Folder" /setowner $SUGroup /T /C 
 
-# Phase 2 Reset permissions on all files
+# Phase 2 Reset permissions on all files and remove authenticated users 
 Write-Host "Phase 2: Resetting possibly messy permissions, disabling inheritance on $Folder, and removing defualt usergroup"
 icacls "$Folder" /reset /T /C 
 # Remove "Users" from the defualt permissions
 icacls "$Folder" /remove "Authenticated Users" /T /C 
 
-# Phase 3 grant $UserGroup & $UserGroup2 the appropriate permissions (deny modify) to the root of the mapped drive
+# Phase 3 grant $UserGroup & $UserGroup2 the appropriate permissions (deny modify) to the share 
 Write-Host "Phase 3: Granting permissions to $UserGroup and $SUGroup"
 icacls "$Folder" /grant ("$UserGroup" + ':(OI)(CI)(X,RD,RA,REA,RC)') /C
 icacls "$Folder" /grant ("$UserGroup2" + ':(OI)(CI)(X,RD,RA,REA,RC)') /C 
-# grant $SUGroup full control and domain admins
+# grant $SUGroup full control along with domain admins
 icacls "$Folder" /grant ("$SUGroup" + ':(OI)(CI)(F)') /C
 icacls "$Folder" /grant ("Domain Admins" + ':(OI)(CI)(F)') /C
 
