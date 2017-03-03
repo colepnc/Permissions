@@ -1,5 +1,5 @@
-﻿# The purpose of this script is to clean up silly permissions on a mapped drive, deny most users the ablity to modify the root folder of the drive,
-# but grant them near full control (no permissions/ownership changes of course) within subdirectories.
+﻿# The purpose of this script is to clean up silly permissions on a mapped drive, segregate each site with read-only to remote sites,
+# and give the local-site Full Control.
 
 # $Folders is the root of the mapped drive share, $Subfolders will recurse all files/folders below it
 
